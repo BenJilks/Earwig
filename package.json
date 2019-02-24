@@ -1,0 +1,19 @@
+{
+  "name": "earwig",
+  "version": "1.0.0",
+  "description": "music player",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "music"
+  ],
+  "author": "BenJilks",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^4.0.5",
+    "jquery": "^3.3.1",
+    "music-metadata": "^3.5.2"
+  }
+}
