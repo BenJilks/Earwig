@@ -20,7 +20,10 @@
 {
     list-style-type: none;
     padding: 0px;
-    margin: 5px 0px;
+    margin: 0px 0px;
+
+    height: calc(100% - 20px - 45px);
+    overflow-y: auto;
 }
 
 .playlist li
@@ -72,4 +75,5 @@
 
     background-color: rgb(228, 228, 228);
     padding: 7px;
+    height: 20px;
 }

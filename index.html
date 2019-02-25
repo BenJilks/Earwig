@@ -3,6 +3,8 @@
 	<head>
 		<title>Earwig</title>
 		<script src="scripts/player.js"></script>
+		<script src="scripts/file-loader.js"></script>
+		<script src="scripts/playlist.js"></script>
 		<script src="scripts/songs.js"></script>
 		<link rel="stylesheet" type="text/css" href="styles/player.css">
 		<link rel="stylesheet" type="text/css" href="styles/song-list.css">
@@ -11,13 +13,14 @@
 
 	<body>
 		<div class="player">
+			<div class="player-back"><div></div></div>
 			<img src="pretty bad.png" class="cover" />
 
 			<div class="nav">
 				<div class="nav-buttons">
 					<div id="containter">
 						<div id="back"><span></span><span></span></div>
-						<div id="play"><span id="icon"></span></div>
+						<div id="play" onclick="play_pause()"><span id="play-icon"></span></div>
 						<div id="next"><span></span><span></span></div>
 					</div>
 				</div>
@@ -32,21 +35,36 @@
 		</div>
 
 		<div class="song-list">
-			<div class="album-list">
+			<div class="header-bar">
+				<div class="header-content">
+					<div class="header-box">
+						<i class="back collection-only"></i>
+						<input class="search" />
+					</div>
+				</div>
+				<div class="header-box-right">
+					<i class="play collection-only"></i>
+				</div>
 			</div>
+			<div class="collection-list">
+				<span id="items"></span>
+				<div class="album" id="new-playlist">
+					<img src="new playlist.png" />
+					<h3>New Playlist</h3>
+				</div>
+			</div>
+			<div class="collection-view"></div>
 		</div>
 
 		<div class="sidebar">
 			<div class="title-bar">
-				<text id="title"><text>Best Songs</text></text>
+				<text id="title">
+					<text id="playlist-title">Empty Playlist</text>
+				</text>
 			</div>
-			<ul class="playlist">
-				<li>Bank Account <text id="artist">21 Savage</text></li>
-				<li>Mr Brightside <text id="artist">The Killers</text></li>
-				<li>Gucci Gang <text id="artist">Lil Pump</text></li>
-			</ul>
+			<ul class="playlist"></ul>
 			<div class="control">
-				<button>Test</button>
+				<button onclick="toggle_song_view()">Test</button>
 				<button>Shuffle</button>
 			</div>
 		</div>

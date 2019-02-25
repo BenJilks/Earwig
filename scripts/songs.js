@@ -1,7 +1,5 @@
 
-let $ = require('jquery')
-let fs = require('fs')
-let mm = require('music-metadata')
+$ = require('jquery')
 let default_cover = 'pretty bad.png'
 
 class Album
@@ -15,11 +13,12 @@ class Album
 
 class Song
 {
-    constructor(name, artist, album)
+    constructor(name, artist, album, player)
     {
         this.name = name
         this.artist = artist
         this.album = album
+        this.player = player
     }
 }
 
@@ -35,9 +34,15 @@ class SongCollection
 
     add_song(song)
     {
-        this.songs.push(song)
-        if (!(song.album in this.albums))
-            this.albums.push(song.album)
+        if (!this.songs.includes(song))
+        {
+            this.songs.push(song)
+
+            if (!this.albums.includes(song.album))
+                this.albums.push(song.album)
+            return true
+        }
+        return false
     }
 
     cover_image()
@@ -67,9 +72,51 @@ class SongCollection
         return album
     }
 
+    create_album_view(album)
+    {
+        let view = document.createElement('div')
+        let cover = document.createElement('img')
+        let content = document.createElement('div')
+        view.className = 'album-view'
+        cover.src = album.cover == null ? default_cover : album.cover
+        content.id = 'album-content'
+
+        this.songs.forEach((song) =>
+        {
+            if (song.album === album)
+            {
+                let song_dom = document.createElement('text')
+                song_dom.innerHTML = song.name
+                song_dom.onclick = () => { add_current_playlist(song) }
+                content.appendChild(song_dom)
+            }
+        })
+
+        view.appendChild(cover)
+        view.appendChild(content)
+        return view
+    }
+
+    select()
+    {
+        select_playlist(this)
+    }
+
     on_click()
     {
-        alert(this.name)
+        let view = $('.collection-view')
+        view.empty()
+
+        this.albums.forEach((album) => 
+        {
+            console.log(album.name)
+            let album_view = this.create_album_view(album)
+            view.append(album_view)
+        })
+
+        view.show()
+        $('.play').click(() => { this.select() })
+        $('.collection-only').show()
     }
 }
 
@@ -82,6 +129,7 @@ class SongLibrary
         this.cover_cache = {}
 
         this.artist_groups = {}
+        this.playlists = []
         this.songs_to_proccess = 0
     }
 
@@ -126,9 +174,20 @@ class SongLibrary
             this.find_cover_path(album.name, data, (path) =>
             {
                 album.cover = path
-                this.finished_proccessing_song(callback)
+                callback()
             })
         }
+    }
+
+    add_song(song)
+    {
+        this.songs.push(song)
+        this.group_song(song)
+    }
+
+    add_playlist(playlist)
+    {
+        this.playlists.push(playlist)
     }
 
     group_song(song)
@@ -141,7 +200,7 @@ class SongLibrary
 
     update_album_list()
     {
-        let list = $('.album-list')
+        let list = $('.collection-list #items')
         list.empty()
 
         Object.keys(this.artist_groups).forEach((artist) =>
@@ -150,80 +209,35 @@ class SongLibrary
             let album = collection.create_dom()
             list.append(album)
         })
-    }
 
-    finished_proccessing_song(callback)
-    {
-        this.songs_to_proccess--
-        if (this.songs_to_proccess <= 0)
-            callback()
-    }
-
-    load_file(file, callback)
-    {
-        mm.parseFile(file, {native: true})
-        .then((metadata) => 
-        {
-            let common = metadata.common
-            let name = common.title
-            let album = common.album
-            let artist = common.artist
-            let cover = common.picture
-            
-            let song = new Song(name, artist, this.find_album(album))
-            this.songs.push(song)
-            this.group_song(song)
-            
-            if (cover != null)
-                this.load_cover(song, cover[0], callback)
-            else
-                this.finished_proccessing_song(callback)
-        })
-        .catch((err) => 
-        {
-            console.log(err.message)
-            this.finished_proccessing_song(callback)
-        })
-    }
-
-    load_from_folder(folder, callback)
-    {
-        fs.readdir(folder, (err, files) => 
-        {
-            if (err)
-                return console.log(err)
-            this.songs_to_proccess += files.length
-
-            // Go through all the files within the folder
-            files.forEach((file) =>
-            {
-                let path = folder + '/' + file
-                fs.lstat(path, (err, stats) =>
-                {
-                    if (err)
-                        return console.log(err)
-
-                    // If the file is a folder, then go through that, 
-                    // otherwise proccess the file
-                    if (stats.isDirectory())
-                    {
-                        this.songs_to_proccess--
-                        this.load_from_folder(path, callback)
-                        return
-                    }
-                    this.load_file(path, callback)
-                })
-            })
-        })
+        this.playlists.forEach((playlist) => {
+            list.append(playlist.create_dom())
+        });
     }
 
 }
 
 $(document).ready(() =>
 {
-    let lib = new SongLibrary()
-    lib.load_from_folder('/run/media/benjilks/Files/Music', () =>
+    $('.back').click(() =>
     {
+        $('.collection-view').hide()
+        $('.collection-only').hide()
+    })
+    $('.collection-only').hide()
+
+    let lib = new SongLibrary()
+    let file_loader = new FileLoader()
+    file_loader.load_from_folder(lib, '/run/media/benjilks/Files/Music', () =>
+    {
+        lib.update_album_list()
+        select_playlist(lib.artist_groups['Lil Peep'])
+    })
+
+    $('#new-playlist').click(() =>
+    {
+        let playlist = new SongCollection('Unnamed Playlist', 'playlist')
+        lib.add_playlist(playlist)
         lib.update_album_list()
     })
 })
