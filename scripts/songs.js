@@ -9,6 +9,13 @@ class Album
         this.name = name
         this.cover = null
     }
+
+    get_cover()
+    {
+        if (this.cover == null)
+            return default_cover
+        return this.cover
+    }
 }
 
 class Song
@@ -78,7 +85,7 @@ class SongCollection
         let cover = document.createElement('img')
         let content = document.createElement('div')
         view.className = 'album-view'
-        cover.src = album.cover == null ? default_cover : album.cover
+        cover.src = album.get_cover()
         content.id = 'album-content'
 
         this.songs.forEach((song) =>
@@ -96,12 +103,7 @@ class SongCollection
         view.appendChild(content)
         return view
     }
-
-    select()
-    {
-        select_playlist(this)
-    }
-
+    
     on_click()
     {
         let view = $('.collection-view')
@@ -115,7 +117,7 @@ class SongCollection
         })
 
         view.show()
-        $('.play').click(() => { this.select() })
+        $('.play').click(() => { select_playlist(this) })
         $('.collection-only').show()
     }
 }

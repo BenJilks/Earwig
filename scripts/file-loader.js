@@ -61,10 +61,10 @@ class FileLoader
                 return console.log(err)
 
             // Go through all the files within the folder
-            files.forEach((file) =>
+            files.forEach((file) => 
             {
                 let path = folder + '/' + file
-                fs.lstat(path, (err, stats) =>
+                fs.lstat(path, (err, stats) => 
                 {
                     if (err)
                         return console.log(err)

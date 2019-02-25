@@ -29,12 +29,13 @@ function play_song(song)
 {
     if (current_song != null)
     {
+        console.log('test')
         current_song.player.stop()
         clearInterval(seek_updater)
     }
     
-    $('.cover').attr('src', song.album.cover)
-    $('.player-back').css('background-image', 'url("' + song.album.cover + '")')
+    $('.cover').attr('src', song.album.get_cover())
+    $('.player-back').css('background-image', 'url("' + song.album.get_cover() + '")')
     $('.nav-buttons #play>span').attr('id', 'pause-icon')
     set_progress(0)
     current_song = song
@@ -42,10 +43,12 @@ function play_song(song)
 
     seek_updater = setInterval(() =>
     {
-        set_progress(song.player.current_location())
-    }, 100)
-
-    
+        let pregress = song.player.current_location()
+        set_progress(pregress)
+        
+        if (pregress >= 100)
+            next_song_in_playlist()
+    }, 100)    
 }
 
 function play_pause()

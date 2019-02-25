@@ -38,6 +38,16 @@
     background-color: rgb(233, 233, 233);
 }
 
+.selected
+{
+    background-color: rgb(151, 207, 168);
+}
+
+.selected:hover
+{
+    background-color: rgb(114, 156, 126) !important;
+}
+
 .playlist li #artist
 {
     float: right;
