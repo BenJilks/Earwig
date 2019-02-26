@@ -1,3 +1,4 @@
+
 let fs = require('fs')
 let mm = require('music-metadata')
 
@@ -40,7 +41,7 @@ class FileLoader
             {
                 lib.load_cover(song, cover[0], () => 
                 { 
-                    this.finished_proccessing_song(callback) 
+                    this.finished_proccessing_song(callback)
                 })
                 return
             }
@@ -102,27 +103,41 @@ class FilePlayer
         this.audio.play()
     }
 
+    duration()
+    {
+        if (this.audio != null)
+            return this.audio.duration
+        return 0
+    }
+
     pause()
     {
-        this.audio.pause()
+        if (this.audio != null)
+            this.audio.pause()
     }
 
     stop()
     {
-        this.audio.pause()
-        this.audio = null
+        if (this.audio != null)
+        {
+            this.audio.pause()
+            this.audio = null
+        }
     }
 
     skip_to(location)
     {
-        this.audio.currentTime = (location / 100) * 
-            this.audio.duration
+        if (this.audio != null)
+            this.audio.currentTime = (location / 100) * 
+                this.audio.duration
     }
 
     current_location()
     {
-        return (this.audio.currentTime / 
-            this.audio.duration) * 100
+        if (this.audio != null)
+            return (this.audio.currentTime / 
+                this.audio.duration) * 100
+        return 0
     }
 
 }

@@ -171,6 +171,8 @@ input:focus
 
 .album h3
 {
+    display: block;
+    width: 150px;
     text-align: center;
     margin-bottom: 0px;
 }

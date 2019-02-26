@@ -8,7 +8,7 @@ function set_progress(progress)
 {
     progress = Math.max(Math.min(progress, 100), 0)
     $('.nav-bar #background #progress').css('width', progress + '%')
-    $('.nav-bar .grabber').css('left', progress + '%')
+    $('.nav-bar #grabber').css('left', progress + '%')
 }
 
 function set_pre_progress(progress)
@@ -23,6 +23,21 @@ function toggle_song_view()
         song_list.css('top', '100%')
     else
         song_list.css('top', '0%')
+}
+
+function format_time(time)
+{
+    if (!time)
+        return "00:00"
+    
+    let h = Math.floor(time / (60 * 60))
+    let m = Math.floor(time / 60) % 60
+    let s = time % 60
+    let date = new Date(0, 0, 0, h, m, s)
+
+    if (h > 0)
+        return date.toLocaleTimeString()
+    return date.toLocaleTimeString().substring(3)
 }
 
 function play_song(song)
@@ -40,11 +55,16 @@ function play_song(song)
     set_progress(0)
     current_song = song
     song.player.play()
-
+    
     seek_updater = setInterval(() =>
     {
         let pregress = song.player.current_location()
         set_progress(pregress)
+        
+        let duration = song.player.duration()
+        let time = pregress / 100 * duration
+        $('.nav-bar #curr_time').html(format_time(time))
+        $('.nav-bar #duration').html(format_time(duration))
         
         if (pregress >= 100)
             next_song_in_playlist()
