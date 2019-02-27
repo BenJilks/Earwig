@@ -84,6 +84,25 @@ class FileLoader
         })
     }
 
+    save_lib(lib)
+    {
+        fs.writeFile(lib.name + '.json', 
+            JSON.stringify(lib.get_save_data()), 
+            () => {})
+    }
+
+    load_lib(lib, callback)
+    {
+        fs.readFile(lib.name + '.json', (err, data) =>
+        {
+            if (err)
+                return console.log(err)
+
+            lib.load_save_data(JSON.parse(data))
+            callback()
+        })
+    }
+
 }
 
 class FilePlayer
@@ -91,6 +110,7 @@ class FilePlayer
 
     constructor(file)
     {
+        this.type = 'file'
         this.file = file
         this.audio = null
     }

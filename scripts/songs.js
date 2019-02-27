@@ -37,6 +37,7 @@ class SongCollection
         this.type = type
         this.songs = []
         this.albums = []
+        this.is_displayed = false
     }
 
     add_song(song)
@@ -111,7 +112,6 @@ class SongCollection
 
         this.albums.forEach((album) => 
         {
-            console.log(album.name)
             let album_view = this.create_album_view(album)
             view.append(album_view)
         })
@@ -124,8 +124,9 @@ class SongCollection
 
 class SongLibrary
 {
-    constructor()
+    constructor(name)
     {
+        this.name = name
         this.albums = {}
         this.songs = []
         this.cover_cache = {}
@@ -183,13 +184,19 @@ class SongLibrary
 
     add_song(song)
     {
-        this.songs.push(song)
-        this.group_song(song)
+        if (!this.songs.includes(song))
+        {
+            this.songs.push(song)
+            this.group_song(song)
+            return true
+        }
+        return false
     }
 
     add_playlist(playlist)
     {
-        this.playlists.push(playlist)
+        if (!this.playlists.includes(playlist))
+            this.playlists.push(playlist)
     }
 
     group_song(song)
@@ -203,18 +210,73 @@ class SongLibrary
     update_album_list()
     {
         let list = $('.collection-list #items')
-        list.empty()
 
         Object.keys(this.artist_groups).forEach((artist) =>
         {
             let collection = this.artist_groups[artist]
-            let album = collection.create_dom()
-            list.append(album)
+            if (!collection.is_displayed)
+            {
+                let album = collection.create_dom()
+                list.append(album)
+                collection.is_displayed = true
+            }
         })
 
-        this.playlists.forEach((playlist) => {
-            list.append(playlist.create_dom())
+        this.playlists.forEach((playlist) => 
+        {
+            if (!playlist.is_displayed)
+            {
+                list.append(playlist.create_dom())
+                playlist.is_displayed = true
+            }
         });
+    }
+
+    get_save_data()
+    {
+        let data =
+        {
+            albums: this.albums,
+            songs: this.songs,
+            playlists: this.playlists
+        }
+        return data
+    }
+
+    load_save_data(data)
+    {
+        Object.keys(data.albums).forEach((album_name) =>
+        {
+            let album_info = data.albums[album_name]
+            let album = new Album(album_name)
+            album.cover = album_info.cover
+            this.albums[album_name] = album
+        })
+        
+        data.songs.forEach((song_info) => 
+        {
+            let album_info = song_info.album
+            let song = new Song(song_info.name, song_info.artist, 
+                this.find_album(album_info.name))
+            
+            let player_info = song_info.player
+            switch(player_info.type)
+            {
+                case 'file': song.player = new FilePlayer(player_info.file); break
+                default: console.log('Error: no player')
+            }
+            this.add_song(song)
+        })
+
+        data.playlists.forEach((playlist_info) => 
+        {
+            let playlist = new SongCollection(playlist_info.name, playlist_info.type)
+            playlist_info.songs.forEach((song) => 
+            {
+                playlist.add_song(song)
+            });
+            this.add_playlist(playlist)
+        })
     }
 
 }
@@ -228,15 +290,15 @@ $(document).ready(() =>
     })
     $('.collection-only').hide()
 
-    let lib = new SongLibrary()
+    let lib = new SongLibrary("default")
     let file_loader = new FileLoader()
-    file_loader.load_from_folder(lib, '/run/media/benjilks/Files/Music', () =>
+    file_loader.load_lib(lib, () => 
     {
         lib.update_album_list()
         select_playlist(lib.artist_groups['Lil Peep'])
     })
 
-    $('#new-playlist').click(() =>
+    $('#new-playlist').click(() => 
     {
         let playlist = new SongCollection('Unnamed Playlist', 'playlist')
         lib.add_playlist(playlist)
