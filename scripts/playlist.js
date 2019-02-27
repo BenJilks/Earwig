@@ -22,18 +22,21 @@ function create_playlist_song_dom(song)
 
 function select_playlist(collection)
 {
-    let playlist = $('.playlist')
-    playlist.empty()
-    current_playlist_song = null
-
-    collection.songs.forEach((song) => 
+    if (collection != null)
     {
-        let item = create_playlist_song_dom(song)
-        playlist.append(item)
-    });
+        let playlist = $('.playlist')
+        playlist.empty()
+        current_playlist_song = null
 
-    $('#playlist-title').html(collection.name)
-    current_playlist = collection
+        collection.songs.forEach((song) => 
+        {
+            let item = create_playlist_song_dom(song)
+            playlist.append(item)
+        });
+
+        $('#playlist-title').html(collection.name)
+        current_playlist = collection
+    }
 }
 
 function add_current_playlist(song)

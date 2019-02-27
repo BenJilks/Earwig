@@ -31,26 +31,24 @@ class Song
 
 class SongCollection
 {
-    constructor(name, type)
+    constructor(name, type, update_callback)
     {
         this.name = name
         this.type = type
         this.songs = []
         this.albums = []
+        this.update_callback = update_callback
         this.is_displayed = false
     }
 
     add_song(song)
     {
-        if (!this.songs.includes(song))
-        {
-            this.songs.push(song)
+        this.songs.push(song)
 
-            if (!this.albums.includes(song.album))
-                this.albums.push(song.album)
-            return true
-        }
-        return false
+        if (!this.albums.includes(song.album))
+            this.albums.push(song.album)
+
+        return true
     }
 
     cover_image()
@@ -95,7 +93,11 @@ class SongCollection
             {
                 let song_dom = document.createElement('text')
                 song_dom.innerHTML = song.name
-                song_dom.onclick = () => { add_current_playlist(song) }
+                song_dom.onclick = () => 
+                { 
+                    add_current_playlist(song)
+                    this.update_callback(song) 
+                }
                 content.appendChild(song_dom)
             }
         })
@@ -124,12 +126,13 @@ class SongCollection
 
 class SongLibrary
 {
-    constructor(name)
+    constructor(name, update_callback)
     {
         this.name = name
         this.albums = {}
         this.songs = []
         this.cover_cache = {}
+        this.update_callback = update_callback
 
         this.artist_groups = {}
         this.playlists = []
@@ -182,9 +185,24 @@ class SongLibrary
         }
     }
 
+    has_song(song)
+    {
+        let has_song = false
+        this.songs.forEach((other) => 
+        {
+            if (other.name === song.name && 
+                other.album.name === song.album.name)
+            {
+                has_song = true
+                return
+            }
+        })
+        return has_song
+    }
+
     add_song(song)
     {
-        if (!this.songs.includes(song))
+        if (!this.has_song(song))
         {
             this.songs.push(song)
             this.group_song(song)
@@ -203,7 +221,8 @@ class SongLibrary
     {
         let artist = song.artist
         if (!(artist in this.artist_groups))
-            this.artist_groups[artist] = new SongCollection(artist, 'artist')
+            this.artist_groups[artist] = new SongCollection(artist, 
+                'artist', this.update_callback)
         this.artist_groups[artist].add_song(song)
     }
 
@@ -243,6 +262,21 @@ class SongLibrary
         return data
     }
 
+    load_song_data(song_info)
+    {
+        let album_info = song_info.album
+        let song = new Song(song_info.name, song_info.artist, 
+            this.find_album(album_info.name))
+        
+        let player_info = song_info.player
+        switch(player_info.type)
+        {
+            case 'file': song.player = new FilePlayer(player_info.file); break
+            default: console.log('Error: no player')
+        }
+        return song
+    }
+
     load_save_data(data)
     {
         Object.keys(data.albums).forEach((album_name) =>
@@ -255,26 +289,31 @@ class SongLibrary
         
         data.songs.forEach((song_info) => 
         {
-            let album_info = song_info.album
-            let song = new Song(song_info.name, song_info.artist, 
-                this.find_album(album_info.name))
-            
-            let player_info = song_info.player
-            switch(player_info.type)
-            {
-                case 'file': song.player = new FilePlayer(player_info.file); break
-                default: console.log('Error: no player')
-            }
+            let song = this.load_song_data(song_info)
             this.add_song(song)
         })
 
         data.playlists.forEach((playlist_info) => 
         {
-            let playlist = new SongCollection(playlist_info.name, playlist_info.type)
-            playlist_info.songs.forEach((song) => 
+            let playlist = new SongCollection(playlist_info.name, 
+                playlist_info.type, this.update_callback)
+            
+            playlist_info.songs.forEach((song_info) => 
             {
-                playlist.add_song(song)
-            });
+                let song_found = false
+                this.songs.forEach((song) => 
+                {
+                    if (song.name == song_info.name && 
+                        song.album.name == song_info.album.name)
+                    {
+                        playlist.add_song(song)
+                        song_found = true
+                    }
+                })
+
+                if (!song_found)
+                    this.add_song(this.load_song_data(song_info))
+            })
             this.add_playlist(playlist)
         })
     }
@@ -290,7 +329,11 @@ $(document).ready(() =>
     })
     $('.collection-only').hide()
 
-    let lib = new SongLibrary("default")
+    let lib = new SongLibrary("default", () =>
+    {
+        file_loader.save_lib(lib)
+    })
+
     let file_loader = new FileLoader()
     file_loader.load_lib(lib, () => 
     {
@@ -300,8 +343,11 @@ $(document).ready(() =>
 
     $('#new-playlist').click(() => 
     {
-        let playlist = new SongCollection('Unnamed Playlist', 'playlist')
+        let playlist = new SongCollection('Unnamed Playlist', 
+            'playlist', lib.update_callback)
+        
         lib.add_playlist(playlist)
         lib.update_album_list()
+        file_loader.save_lib(lib)
     })
 })

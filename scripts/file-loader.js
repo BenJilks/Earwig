@@ -7,14 +7,6 @@ class FileLoader
 
     constructor()
     {
-        this.songs_to_proccess = 0
-    }
-
-    finished_proccessing_song(callback)
-    {
-        this.songs_to_proccess--
-        if (this.songs_to_proccess <= 0)
-            callback()
     }
 
     load_file(lib, file, callback)
@@ -34,24 +26,32 @@ class FileLoader
             // Create and add the new song object
             let song = new Song(name, artist, lib.find_album(album), 
                 new FilePlayer(file))
-            lib.add_song(song)
-            
+                
             // Load the song cover if one exists
             if (cover != null)
             {
                 lib.load_cover(song, cover[0], () => 
-                { 
-                    this.finished_proccessing_song(callback)
+                {
+                    lib.add_song(song)
+                    callback(song)
                 })
                 return
             }
-            this.finished_proccessing_song(callback)
+
+            lib.add_song(song)
+            callback(song)
         })
         .catch((err) => 
         {
             console.log(err.message)
-            this.finished_proccessing_song(callback)
         })
+    }
+
+    check_cover(file)
+    {
+        if (file.match(/\.(jpeg|jpg|gif|png)$/) != null)
+            return true
+        return false
     }
 
     load_from_folder(lib, folder, callback)
@@ -62,6 +62,8 @@ class FileLoader
                 return console.log(err)
 
             // Go through all the files within the folder
+            let songs = []
+            let cover = null
             files.forEach((file) => 
             {
                 let path = folder + '/' + file
@@ -75,10 +77,25 @@ class FileLoader
                     if (stats.isDirectory())
                     {
                         this.songs_to_proccess--
-                        this.load_from_folder(lib, path, callback)
-                        return
+                        this.load_from_folder(lib, path, (song) =>
+                        {
+                            songs.push(song)
+                            callback(song)
+                        })
                     }
-                    this.load_file(lib, path, callback)
+                    else if (this.check_cover(path))
+                    {
+                        cover = path
+                    }
+                    else
+                    {
+                        this.load_file(lib, path, (song) =>
+                        {
+                            if (cover != null)
+                                song.album.cover = cover
+                            callback(song)
+                        })
+                    }
                 })
             })
         })
