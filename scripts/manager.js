@@ -1,25 +1,32 @@
 
 $ = require('jquery')
+const { dialog } = require('electron').remote
 
 function add_folder()
 {
-    let item = document.createElement('li')
-    let location = document.createElement('text')
-    let edit = document.createElement('img')
-    let remove = document.createElement('text')
+    dialog.showOpenDialog((file_path) =>
+    {
+        if (file_path)
+        {
+            let item = document.createElement('li')
+            let location = document.createElement('text')
+            let edit = document.createElement('img')
+            let remove = document.createElement('text')
 
-    location.id = 'location'
-    location.innerHTML = '/'
-    edit.src = 'edit.png'
-    edit.onclick = edit_event
-    remove.id = 'remove'
-    remove.innerHTML = 'x'
-    remove.onclick = remove_event
+            location.id = 'location'
+            location.innerHTML = file_path
+            edit.src = 'edit.png'
+            edit.onclick = edit_event
+            remove.id = 'remove'
+            remove.innerHTML = 'x'
+            remove.onclick = remove_event
 
-    item.appendChild(location)
-    item.appendChild(edit)
-    item.appendChild(remove)
-    $('.file-list').append(item)
+            item.appendChild(location)
+            item.appendChild(edit)
+            item.appendChild(remove)
+            $('.file-list').append(item)
+        }
+    })
 }
 
 function edit_event(event)
