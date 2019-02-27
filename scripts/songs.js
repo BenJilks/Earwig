@@ -1,5 +1,6 @@
 
 $ = require('jquery')
+const { ipcRenderer } = require('electron')
 let default_cover = 'pretty bad.png'
 
 class Album
@@ -320,6 +321,11 @@ class SongLibrary
 
 }
 
+function manage_libs()
+{
+    ipcRenderer.send('manage_libs')
+}
+
 $(document).ready(() =>
 {
     $('.back').click(() =>
@@ -339,6 +345,12 @@ $(document).ready(() =>
     {
         lib.update_album_list()
         select_playlist(lib.artist_groups['Lil Peep'])
+    })
+
+    file_loader.load_from_folder(lib, '/run/media/benjilks/Files/Music', () =>
+    {
+        lib.update_album_list()
+        file_loader.save_lib(lib)
     })
 
     $('#new-playlist').click(() => 
