@@ -335,22 +335,18 @@ $(document).ready(() =>
     })
     $('.collection-only').hide()
 
-    let lib = new SongLibrary("default", () =>
+    let lib = new SongLibrary("default", () => 
     {
-        file_loader.save_lib(lib)
+        let event = new Event('save_lib')
+        event.lib = lib
+        document.dispatchEvent(event)
     })
 
-    let file_loader = new FileLoader()
-    file_loader.load_lib(lib, () => 
+    load_all_modules('modules', 'loader.js', () =>
     {
-        lib.update_album_list()
-        select_playlist(lib.artist_groups['Lil Peep'])
-    })
-
-    file_loader.load_from_folder(lib, '/run/media/benjilks/Files/Music', () =>
-    {
-        lib.update_album_list()
-        file_loader.save_lib(lib)
+        let event = new Event('load_songs')
+        event.lib = lib
+        document.dispatchEvent(event)
     })
 
     $('#new-playlist').click(() => 

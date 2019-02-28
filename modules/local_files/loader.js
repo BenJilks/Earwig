@@ -1,13 +1,9 @@
 
-let fs = require('fs')
-let mm = require('music-metadata')
+fs = require('fs')
+mm = require('music-metadata')
 
 class FileLoader
 {
-
-    constructor()
-    {
-    }
 
     load_file(lib, file, callback)
     {
@@ -103,14 +99,17 @@ class FileLoader
 
     save_lib(lib)
     {
-        fs.writeFile(lib.name + '.json', 
-            JSON.stringify(lib.get_save_data()), 
-            () => {})
+        fs.mkdir('data', () =>
+        {
+            fs.writeFile('data/' + lib.name + '.json', 
+                JSON.stringify(lib.get_save_data()), 
+                () => {})
+        })
     }
 
     load_lib(lib, callback)
     {
-        fs.readFile(lib.name + '.json', (err, data) =>
+        fs.readFile('data/' + lib.name + '.json', (err, data) => 
         {
             if (err)
                 return console.log(err)
@@ -178,3 +177,36 @@ class FilePlayer
     }
 
 }
+
+document.addEventListener('save_lib', (event) => 
+{
+    let file_loader = new FileLoader()
+    let lib = event.lib
+    file_loader.save_lib(lib)
+})
+
+$(document).ready(() => { module_done_loading() })
+document.addEventListener('load_songs', (event) => 
+{
+    let file_loader = new FileLoader()
+    let lib = event.lib
+    file_loader.load_lib(lib, () => 
+    {
+        lib.update_album_list()
+    })
+
+    fs.readFile('data/local_files.json', (err, data) =>
+    {
+        if (err)
+            return console.log(err)
+        
+        let folders = JSON.parse(data)
+        folders.forEach((folder) =>
+        {
+            file_loader.load_from_folder(lib, folder, () =>
+            {
+                lib.update_album_list()
+            })
+        })
+    })
+})

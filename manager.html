@@ -2,6 +2,7 @@
 
     <head>
         <title>Library Manager</title>
+        <script src="scripts/module_loader.js"></script>
         <script src="scripts/manager.js"></script>
         <link rel="stylesheet" type="text/css" href="styles/manager.css">
     </head>
@@ -9,24 +10,6 @@
     <body>
         <div class="content">
             <div class="tabs">
-                <button id="selected">Local Files</button>
-                <button>Google Drive</button>
-            </div>
-
-            <div id="Local Files" class="tab-content">
-                <h2>Files / Folders</h2>
-                <list class="file-list">
-                    <li>
-                        <text id="location">/run/media/benjilks/Files/Music</text>
-                        <img src="edit.png"/>
-                        <text id="remove">x</text>
-                    </li>
-                </list>
-                <button class="new-folder" onclick="add_folder()">Add File / Folder</button>
-            </div>
-
-            <div id="Google Drive" class="tab-content">
-                <h1>Google!!!</h1>
             </div>
         </div>
     </body>
