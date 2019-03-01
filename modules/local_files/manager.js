@@ -98,18 +98,8 @@ function load_list()
 $(document).ready(() => 
 {
     let module_name = 'Local Files'
+    add_manager_tab(module_name, 'modules/local_files/manager.html')
 
-    let tab = document.createElement('button')
-    let tab_content = document.createElement('div')
-    tab.innerHTML = module_name
-    tab_content.id = module_name
-    tab_content.className = 'tab-content'
-    fs.readFile('modules/local_files/manager.html', (err, data) => { tab_content.innerHTML = data })
-    $('.tabs').append(tab)
-    $('.content').append(tab_content)
-
-    $('.file-list li img').click(edit_event)
-    $('.file-list li #remove').click(remove_event)
     load_list()
     module_done_loading()
 })
